@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -69,12 +70,30 @@ namespace Zenseless.PersistentSettings.Tests
 			public override string ToString() => $"'{CurrentFile}'; {Left}; {TopMost}; <{string.Join(',', ObservableItems)}>; <{string.Join(',', Items)}>";
 		}
 
-		//class Data<TType>
-		//{
-		//	public TType Value { get; internal set; }
-		//	public override string ToString() => $"{Value}";
-		//}
-		//Data<TType> Create<TType>(TType value) => new Data<TType> { Value = value };
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+		class Data<TType> : IEquatable<Data<TType>>
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+		{
+			public Data(TType value) => Value = value;
+
+			public TType Value { get; internal set; }
+			public override bool Equals(object? other)
+			{
+				if (ReferenceEquals(this, other)) return true;
+				if (other?.GetType() != GetType()) return false;
+				return Equals(other as Data<TType>);
+			}
+			
+			public bool Equals(Data<TType>? other)
+			{
+				if (other is null) return false;
+				if (!Value.Equals(other.Value)) return false;
+				return true;
+			}
+		public override string ToString() => $"{Value}";
+		}
+
+		static Data<TType> Create<TType>(TType value) => new(value);
 
 		[TestMethod()]
 		public void FullTest()
@@ -94,7 +113,6 @@ namespace Zenseless.PersistentSettings.Tests
 			settings.AddFromProperty(() => actual.Left);
 			settings.AddFromProperty(() => actual.Items);
 			settings.AddFromProperty(() => actual.ObservableItems);
-			//settings.AddFromGetterSetter(nameof(actual.ObservableItems), () => actual.ObservableItems, value => actual.ObservableItems = value);
 			settings.AddFromProperty(() => actual.CurrentFile);
 			settings.AddFromProperty(() => actual.TopMost);
 
@@ -108,6 +126,43 @@ namespace Zenseless.PersistentSettings.Tests
 			settings.Load();
 			Assert.AreEqual(expected, actual);
 			//Assert.AreEqual(left, Create(1234.456));
+		}
+		[TestMethod()]
+		public void DoubleTest()
+		{
+			PersistentSettings settings = new();
+			var expected = 1234.456;
+			var actualData = Create(expected);
+			settings.AddFromProperty(() => actualData.Value);
+			settings.Store();
+			actualData.Value = 0;
+			Assert.AreEqual(0, actualData.Value);
+			settings.Load();
+			Assert.AreEqual(expected, actualData.Value);
+		}
+
+		[DataTestMethod()]
+		public void AddFromPropertyTest()
+		{
+			AddFromPropertyTestHelper(1234.456, 0.0);
+			AddFromPropertyTestHelper(true, false);
+			AddFromPropertyTestHelper("", "7");
+			AddFromPropertyTestHelper("testtest", "");
+			AddFromPropertyTestHelper(new List<string> { }, new List<string>());
+			//ValutTypeTestHelper(new string[] { "testtest" }, Enumerable.Empty<string>());
+			//ValutTypeTestHelper(12);
+		}
+
+		public void AddFromPropertyTestHelper<TType>(TType expected, TType tempValue)
+		{
+			PersistentSettings settings = new();
+			var actualData = Create(expected);
+			settings.AddFromProperty(() => actualData.Value);
+			settings.Store();
+			actualData.Value = tempValue;
+			Assert.AreEqual(tempValue, actualData.Value);
+			settings.Load();
+			Assert.AreEqual(expected, actualData.Value);
 		}
 	}
 }
