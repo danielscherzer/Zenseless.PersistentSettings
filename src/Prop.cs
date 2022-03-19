@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Globalization;
 
 namespace Zenseless.PersistentSettings
 {
@@ -12,7 +13,7 @@ namespace Zenseless.PersistentSettings
 		{
 			Getter = getter;
 			Setter = setter;
-}
+		}
 
 		public static Prop Create<TType>(Func<TType> getter, Action<TType> setter)
 		{
@@ -26,7 +27,7 @@ namespace Zenseless.PersistentSettings
 				}
 				else
 				{
-					result = (TType)value;
+					result = (TType)Convert.ChangeType(value, typeof(TType), CultureInfo.InvariantCulture);
 				}
 				if (result is not null) setter(result);
 			});

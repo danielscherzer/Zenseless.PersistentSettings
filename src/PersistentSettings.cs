@@ -1,16 +1,18 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using Newtonsoft.Json.Linq;
+using System.Reflection;
 
 namespace Zenseless.PersistentSettings
 {
-	public partial class PersistentSettings
+	public class PersistentSettings
 	{
+		/// <summary>
+		/// Load settings from a file
+		/// </summary>
 		public void Load()
 		{
 			if (File.Exists(fileName))
@@ -41,8 +43,8 @@ namespace Zenseless.PersistentSettings
 				{
 					if (memberExpression.Expression is null) throw new ArgumentException("Invalid expression given");
 					var instance = memberExpression.Expression.EvaluateInstance();
-					AddFromGetterSetter(propertyInfo.Name, 
-						() => (ValueType)(propertyInfo.GetValue(instance) ?? throw new ArgumentException("Expression has wrong type")), 
+					AddFromGetterSetter(propertyInfo.Name,
+						() => (ValueType)(propertyInfo.GetValue(instance) ?? throw new ArgumentException("Expression has wrong type")),
 						value => propertyInfo.SetValue(instance, value));
 					return;
 				}
@@ -50,6 +52,9 @@ namespace Zenseless.PersistentSettings
 			throw new InvalidOperationException("Please provide a valid property expression, like '() => instance.PropertyName'.");
 		}
 
+		/// <summary>
+		/// Save the settings to a file
+		/// </summary>
 		public void Store()
 		{
 			var dic = settings.ToDictionary(prop => prop.Key, prop => prop.Value.Getter());
