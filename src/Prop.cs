@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Globalization;
 
@@ -22,7 +23,7 @@ namespace Zenseless.PersistentSettings
 				TType? result;
 				if (value is JToken token)
 				{
-					result = token.ToObject<TType>();
+					result = token.ToObject<TType>(serializer);
 					if (result is not null) setter(result);
 				}
 				else
@@ -32,5 +33,7 @@ namespace Zenseless.PersistentSettings
 				if (result is not null) setter(result);
 			});
 		}
+
+		private static readonly JsonSerializer serializer = new() { CheckAdditionalContent = true, ContractResolver = new DynamicObjectResolver() };
 	}
 }
