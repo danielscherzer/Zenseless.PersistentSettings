@@ -85,7 +85,7 @@ namespace Zenseless.PersistentSettings.Tests
 		{
 			PersistentSettings settings = new();
 			TType value = expected;
-			//Assert.ThrowsException<InvalidOperationException>(() => settings.AddFromProperty(() => value));
+			Assert.ThrowsException<InvalidOperationException>(() => settings.AddFromProperty(() => value));
 			settings.AddFromGetterSetter(nameof(value), () => value, v => value = v);
 			settings.Store();
 			value = tempValue;
@@ -94,7 +94,6 @@ namespace Zenseless.PersistentSettings.Tests
 		}
 
 		struct Input { public float value; };
-
 		[TestMethod()]
 		public void AddFromGetterSetterStructTest()
 		{
@@ -119,7 +118,7 @@ namespace Zenseless.PersistentSettings.Tests
 		readonly struct RoInputC
 		{
 			public readonly float value;
-			public RoInputC() => this.value = 4.7f;
+			public RoInputC() => value = 4.7f;
 			public RoInputC(float value) => this.value = value;
 		}
 		[TestMethod()]
