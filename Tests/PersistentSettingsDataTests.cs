@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,7 +16,7 @@ namespace Zenseless.PersistentSettings.Tests
 			AddFromPropertyTestHelper("testtest", "");
 			AddFromPropertyTestHelper(new List<string> { }, new List<string>());
 			AddFromPropertyTestHelper(new string[] { "testtest" }, Enumerable.Empty<string>());
-			AddFromPropertyTestHelper(new Dictionary<int, int> { [1] = 2 }, new Dictionary<int, int>());
+			AddFromPropertyTestHelper(new Dictionary<int, int> { [1] = 2, [5] = 3 }, new Dictionary<int, int>());
 		}
 
 		public static void AddFromPropertyTestHelper<TType>(TType expected, TType tempValue)
@@ -27,24 +26,13 @@ namespace Zenseless.PersistentSettings.Tests
 			settings.AddFromProperty(() => actualData.Value);
 			settings.Store();
 			actualData.Value = tempValue;
+			Assert.IsNotNull(actualData);
 			Assert.IsNotNull(tempValue);
 			Assert.IsNotNull(expected);
 
-			Compare(tempValue, actualData.Value);
+			Helper.AreEqual(tempValue, actualData.Value);
 			settings.Load();
-			Compare(expected, actualData.Value);
-		}
-
-		private static void Compare<TType>(TType expected, TType actual)
-		{
-			if (expected is ICollection expectedEnum && actual is ICollection actualEnum)
-			{
-				CollectionAssert.AreEqual(expectedEnum, actualEnum);
-			}
-			else
-			{
-				Assert.AreEqual(expected, actual);
-			}
+			Helper.AreEqual(expected, actualData.Value);
 		}
 	}
 }

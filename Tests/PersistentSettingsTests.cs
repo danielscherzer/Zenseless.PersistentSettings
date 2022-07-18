@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Zenseless.PersistentSettings.Tests
 {
@@ -14,18 +16,22 @@ namespace Zenseless.PersistentSettings.Tests
 			AddFromGetterSetterTestHelper(true, false);
 			AddFromGetterSetterTestHelper("", "7");
 			AddFromGetterSetterTestHelper("testtest", "");
+			AddFromGetterSetterTestHelper(new List<string> { }, new List<string>());
+			AddFromGetterSetterTestHelper(new string[] { "testtest" }, Enumerable.Empty<string>());
+			AddFromGetterSetterTestHelper(new Dictionary<int, int> { [1] = 2, [5] = 3 }, new Dictionary<int, int>());
 		}
 
 		public static void AddFromGetterSetterTestHelper<TType>(TType expected, TType tempValue)
 		{
 			PersistentSettings settings = new();
 			TType value = expected;
-			Assert.ThrowsException<InvalidOperationException>(() => settings.AddFromProperty(() => value));
+			//Assert.ThrowsException<InvalidOperationException>(() => settings.AddFromProperty(() => value));
 			settings.AddFromGetterSetter(nameof(value), () => value, v => value = v);
 			settings.Store();
 			value = tempValue;
+			Helper.AreEqual(tempValue, value);
 			settings.Load();
-			Assert.AreEqual(expected, value);
+			Helper.AreEqual(expected, value);
 		}
 
 		struct Input { public float value; };
