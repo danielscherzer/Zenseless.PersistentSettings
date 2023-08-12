@@ -77,7 +77,7 @@ namespace Zenseless.PersistentSettings
 		/// <summary>
 		/// Save the settings to a file
 		/// </summary>
-		/// <param name="fileName">The path to the file the settings are written to.</param>
+		/// <param name="fileName">The path to the file the settings are written to. If none is provided the settings are stored to %appdata%/Roaming/<callingAssemblyName></callingAssemblyName>/"settings.json"</param>
 		public void Store(string fileName = "")
 		{
 			var dic = settings.ToDictionary(prop => prop.Key, prop => prop.Value.Getter());
@@ -89,6 +89,6 @@ namespace Zenseless.PersistentSettings
 		}
 
 		private readonly Dictionary<string, Prop> settings = new();
-		private readonly string defaultFileName = Path.ChangeExtension(Assembly.GetCallingAssembly().Location, "settings.json");
+		private readonly string defaultFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Assembly.GetCallingAssembly()?.GetName().Name ?? string.Empty, "settings.json");
 	}
 }
