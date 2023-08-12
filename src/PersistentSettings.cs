@@ -84,6 +84,7 @@ namespace Zenseless.PersistentSettings
 			var text = JsonConvert.SerializeObject(dic, Formatting.Indented);
 
 			fileName = string.IsNullOrWhiteSpace(fileName) ? defaultFileName : fileName;
+			Directory.CreateDirectory(Path.GetDirectoryName(fileName) ?? string.Empty);
 			File.WriteAllText(fileName, text);
 		}
 
